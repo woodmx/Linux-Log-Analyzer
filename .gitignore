@@ -1,2 +1,12 @@
 __pycache__/
-*.log
+*.pyc
+
+logs/
+real_logs/
+reports/
+
+.env
+*.pem
+*.key
+id_rsa
+id_ed25519
