@@ -1,28 +1,103 @@
-#!/usr/bin/env python3
-
 import re
-from collections import defaultdict
 
-LOG_PATH = "sample.log" 
-THRESHOLD = 3
 
-def analyze_log():
-	failed_attempts = defaultdict(int)
+LOG_PATH = "sample.log"
+THRESHOLD = 5
 
-	with open(LOG_PATH, "r") as log_file:
-		for line in log_file:
-			if "Failed password" in line:
-				match = re.search(r'from (\d+\.\d+\.\d+\.\d+)', line)
-				if match:
-					ip = match.group(1)
-					failed_attempts[ip] += 1
-	
-	print("\n--- Failed Login Report ---\n")
 
-	for ip, count in failed_attempts.items():
-		print(f"{ip} -> {count} failed attempts")
-		if count >= THRESHOLD:
-			print("Suspicious activity detected!")
+# Reads the log file safely
+def readLogFile(filePath):
+    try:
+        with open(filePath, "r", encoding="utf-8") as logFile:
+            return logFile.readlines()
+    except FileNotFoundError:
+        print(f"Error: Log file '{filePath}' was not found.")
+        return []
+    except Exception as errorMessage:
+        print(f"Error reading log file: {errorMessage}")
+        return []
 
-if __name__ == "__main__":
-	analyze_log()
+
+# Extracts failed login IP addresses from log lines
+def extractFailedLoginIps(logLines):
+    failedAttempts = {}
+
+    for lineText in logLines:
+        if "Failed password" in lineText:
+            matchObject = re.search(r"from (\d+\.\d+\.\d+\.\d+)", lineText)
+
+            if matchObject:
+                ipAddress = matchObject.group(1)
+
+                if ipAddress in failedAttempts:
+                    failedAttempts[ipAddress] += 1
+                else:
+                    failedAttempts[ipAddress] = 1
+
+    return failedAttempts
+
+
+# Builds a list of suspicious IPs based on the threshold
+def getSuspiciousIps(failedAttempts):
+    suspiciousIps = []
+
+    for ipAddress, attemptCount in failedAttempts.items():
+        if attemptCount >= THRESHOLD:
+            suspiciousIps.append(ipAddress)
+
+    return suspiciousIps
+
+
+# Prints a formatted report
+def printReport(failedAttempts):
+    totalFailedAttempts = sum(failedAttempts.values())
+    uniqueSourceIps = len(failedAttempts)
+    suspiciousIps = getSuspiciousIps(failedAttempts)
+
+    print("LINUX FAILED LOGIN REPORT")
+    print("-------------------------")
+    print(f"Log File: {LOG_PATH}")
+    print(f"Suspicious Threshold: {THRESHOLD} failed attempts")
+    print()
+
+    print(f"Total Failed Login Attempts: {totalFailedAttempts}")
+    print(f"Unique Source IPs: {uniqueSourceIps}")
+    print()
+
+    print("TOP SOURCE IPs")
+    print("--------------")
+
+    if failedAttempts:
+        for ipAddress, attemptCount in sorted(
+            failedAttempts.items(),
+            key=lambda item: item[1],
+            reverse=True
+        ):
+            print(f"{ipAddress} -> {attemptCount} failed attempts")
+    else:
+        print("No failed login attempts found.")
+
+    print()
+    print("SECURITY STATUS")
+    print("---------------")
+
+    if suspiciousIps:
+        print("Suspicious activity detected from:")
+        for ipAddress in suspiciousIps:
+            print(ipAddress)
+    else:
+        print("No suspicious activity detected.")
+
+
+# Main program
+def main():
+    logLines = readLogFile(LOG_PATH)
+
+    if not logLines:
+        return
+
+    failedAttempts = extractFailedLoginIps(logLines)
+    printReport(failedAttempts)
+
+
+main()
