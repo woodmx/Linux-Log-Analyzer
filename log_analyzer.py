@@ -1,7 +1,7 @@
 import re
 
 
-LOG_PATH = "sample.log"
+LOG_PATH = "data/sample.log"
 THRESHOLD = 5
 
 
