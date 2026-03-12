@@ -54,18 +54,20 @@ def printReport(failedAttempts):
     uniqueSourceIps = len(failedAttempts)
     suspiciousIps = getSuspiciousIps(failedAttempts)
 
-    print("LINUX FAILED LOGIN REPORT")
-    print("-------------------------")
-    print(f"Log File: {LOG_PATH}")
-    print(f"Suspicious Threshold: {THRESHOLD} failed attempts")
-    print()
+    reportLines = []
 
-    print(f"Total Failed Login Attempts: {totalFailedAttempts}")
-    print(f"Unique Source IPs: {uniqueSourceIps}")
-    print()
+    reportLines.append("LINUX FAILED LOGIN REPORT")
+    reportLines.append("-------------------------")
+    reportLines.append(f"Log File: {LOG_PATH}")
+    reportLines.append(f"Suspicious Threshold: {THRESHOLD} failed attempts")
+    reportLines.append("")
 
-    print("TOP SOURCE IPs")
-    print("--------------")
+    reportLines.append(f"Total Failed Login Attempts: {totalFailedAttempts}")
+    reportLines.append(f"Unique Source IPs: {uniqueSourceIps}")
+    reportLines.append("")
+
+    reportLines.append("TOP SOURCE IPs")
+    reportLines.append("--------------")
 
     if failedAttempts:
         for ipAddress, attemptCount in sorted(
@@ -73,20 +75,42 @@ def printReport(failedAttempts):
             key=lambda item: item[1],
             reverse=True
         ):
-            print(f"{ipAddress} -> {attemptCount} failed attempts")
+            reportLines.append(f"{ipAddress} -> {attemptCount} failed attempts")
     else:
-        print("No failed login attempts found.")
+        reportLines.append("No failed login attempts found.")
 
-    print()
-    print("SECURITY STATUS")
-    print("---------------")
+    reportLines.append("")
+    reportLines.append("SECURITY STATUS")
+    reportLines.append("---------------")
 
     if suspiciousIps:
-        print("Suspicious activity detected from:")
+        reportLines.append("Suspicious activity detected from:")
         for ipAddress in suspiciousIps:
-            print(ipAddress)
+            reportLines.append(ipAddress)
     else:
-        print("No suspicious activity detected.")
+        reportLines.append("No suspicious activity detected.")
+
+    reportText = "\n".join(reportLines)
+
+    print(reportText)
+
+    saveReport(reportText)
+
+
+# Saves printed report
+def saveReport(reportText):
+    reportPath = "reports/analysis_report.txt"
+
+    try:
+        with open(reportPath, "w", encoding="utf-8") as reportFile:
+            reportFile.write(reportText)
+
+        print()
+        print(f"Report saved to: {reportPath}")
+
+    except Exception as errorMessage:
+        print(f"Error writing report: {errorMessage}")
+
 
 
 # Main program
