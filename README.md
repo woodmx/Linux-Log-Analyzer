@@ -12,7 +12,7 @@ This project demonstrates basic security monitoring by parsing log files and ide
 - Detects failed login attempts
 - Aggregates failed attempts by source IP
 - Flags suspicious IPs that exceed a configurable threshold
-- Displays a clear security report
+- Displays a clear security report and saves it locally
 
 ---
 
@@ -92,6 +92,25 @@ python3 log_analyzer.py
 
 ---
 
+## Report Generation
+
+After analyzing the log file, the tool automatically generates a report file.
+
+The report is saved to:
+```reports/analysis_report.txt```
+
+This file contains the same information displayed in the console output, including:
+
+- total failed login attempts
+- unique source IP addresses
+- top attacking IPs
+- detected suspicious activity
+
+The `reports/` directory is ignored by Git to prevent generated files from being committed to the repository.
+
+
+---
+
 ## Security Note
 
 This repository intentionally excludes sensitive data.
@@ -121,6 +140,5 @@ Future enhancements could expand the analyzer into a more complete security moni
 
 - detect successful logins following repeated failures
 - identify time-based attack patterns
-- export analysis results to a report file
 - support additional log formats
 - build a command-line interface for configurable analysis
